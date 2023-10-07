@@ -8,6 +8,9 @@ const userController = require(`${__dirname}/../controllers/userControllers`);
 const userRouter = express.Router();
 
 userRouter.route('/signup').post(authController.signup);
+userRouter.route('/login').post(authController.login);
+userRouter.route('/forgotPassword').post(authController.forgotPW);
+userRouter.route('/resetPassword').post(authController.resetPW);
 
 userRouter
   .route('/')

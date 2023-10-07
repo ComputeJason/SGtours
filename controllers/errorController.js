@@ -44,6 +44,12 @@ const handleValidationErrorDB = (err) => {
   return new AppError(message, 400);
 };
 
+const handleJWTExpireError = (err) =>
+  new AppError('Token expired. Please Log in again!', 401);
+
+const handleJWTError = (err) =>
+  new AppError('Invalid token. PLease log in!', 401);
+
 // 4 params express knows its a error handling middleware! cool
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
@@ -66,6 +72,14 @@ module.exports = (err, req, res, next) => {
     }
     if (error._message === 'Tour validation failed') {
       error = handleValidationErrorDB(error);
+    }
+
+    if (err.name === 'JsonWebTokenError') {
+      error = handleJWTError(error);
+    }
+
+    if (err.name === 'TokenExpiredError') {
+      error = handleJWTExpireError(error);
     }
     sendErrorProd(error, res);
   }
