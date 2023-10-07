@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please confirm your password'],
     validate: {
+      // ONLY WORKS FOR SAVE AND CREATE
       validator: function (el) {
         return el === this.password;
       },
@@ -45,6 +46,11 @@ const userSchema = new mongoose.Schema({
   },
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 userSchema.pre('save', async function (next) {
@@ -56,6 +62,21 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12); // is good enough and not too long like 16
   this.passwordConfirm = undefined;
   return next();
+});
+
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) {
+    return next();
+  }
+
+  this.passwordChangedAt = Date.now() - 1000; // token might take abit longer to create, minus 1 second to ensure it works
+  next();
+});
+
+// QUERY MIDDLEWARE remove non-active users from APIs
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
+  next();
 });
 
 // instance methods can be created with Schema and can be accessed from any document! Can't use "this" because we deselected PW, need to pass it in
