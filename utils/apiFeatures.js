@@ -26,6 +26,7 @@ class APIFeatures {
   sort() {
     //Sorting
     if (this.queryString.sort) {
+      //2x or more same values creates an arrays which attackers can use
       const sortBy = this.queryString.sort.split(',').join(' ');
       this.query = this.query.sort(sortBy);
     } else {
